@@ -32,20 +32,20 @@ struct compare {
 code_vector string_to_bitvec(string packed) {
     code_vector result;
 
-    if (packed.size() == 1) {
-        return result;
-    }
-    unsigned nbits = packed[0];
-    for (string::iterator it = packed.begin() + 1; it != packed.end(); ++it) {
-        for (unsigned i = 0; i < 8; i++) {
-            result.push_back((*it >> i) & 1);
-        }
+    for (string::iterator it = packed.begin(); it != packed.end(); ++it) {
+        if(*it == 48) result.push_back(0);
+        else result.push_back(1);
     }
 
-    if (nbits) {
-        for (unsigned i = 0; i < (8 - nbits); i++) {
-            result.pop_back();
-        }
+    return result;
+}
+
+code_vector text_to_code(string text, table & codes) {
+    code_vector result;
+
+    for (string::iterator it = text.begin(); it != text.end(); ++it) {
+        code_vector b = codes[*it];
+        result.insert(result.end(), b.begin(), b.end());
     }
 
     return result;
@@ -65,7 +65,7 @@ void buildCodes(struct Node* root, string str, table* codes)
     buildCodes(root->right, str + "1", codes);
 }
 
-void encode(multimap<int, char> freqchart) {
+void encode(multimap<int, char> freqchart, string text) {
     struct Node *left, *right, *top;
 
     priority_queue<Node*, vector<Node*>, compare> minHeap;
@@ -93,12 +93,15 @@ void encode(multimap<int, char> freqchart) {
 
     table codes;
     buildCodes(minHeap.top(), "", &codes);
+
+    text_to_code(text, codes);
 }
 
 int main()
 {
     ifstream input("lorem.txt");
     map<char, int> freq;
+    string text;
 
     if (input.is_open())
     {
@@ -114,6 +117,7 @@ int main()
             {
                 freq[c] = 1;
             }
+            text += c;
         };
         input.close();
 
@@ -123,7 +127,7 @@ int main()
             sorted.insert(make_pair(it->second, it->first));
         }
 
-        encode(sorted);
+        encode(sorted, text);
     }
     else
     {
@@ -132,4 +136,5 @@ int main()
     }
 
     return 0;
+
 }
