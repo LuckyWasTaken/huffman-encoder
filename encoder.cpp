@@ -65,7 +65,7 @@ void buildCodes(struct Node* root, string str, table* codes)
     buildCodes(root->right, str + "1", codes);
 }
 
-void encode(multimap<int, char> freqchart, string text, ofstream outfile) {
+code_vector encode(multimap<int, char> freqchart, string text) {
     struct Node *left, *right, *top;
 
     priority_queue<Node*, vector<Node*>, compare> minHeap;
@@ -94,8 +94,7 @@ void encode(multimap<int, char> freqchart, string text, ofstream outfile) {
     table codes;
     buildCodes(minHeap.top(), "", &codes);
 
-    code_vector bool_text = text_to_code(text, codes);
-    copy(bool_text.begin(), bool_text.end(), ostreambuf_iterator<char>(outfile));
+    return text_to_code(text, codes);
 }
 
 int main()
@@ -130,7 +129,8 @@ int main()
             sorted.insert(make_pair(it->second, it->first));
         }
 
-        encode(sorted, text, outfile);
+        code_vector bool_text = encode(sorted, text);
+        copy(bool_text.begin(), bool_text.end(), ostreambuf_iterator<char>(outfile));
     }
     else
     {
