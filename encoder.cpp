@@ -65,7 +65,7 @@ void buildCodes(struct Node* root, string str, table* codes)
     buildCodes(root->right, str + "1", codes);
 }
 
-void encode(multimap<int, char> freqchart, string text) {
+void encode(multimap<int, char> freqchart, string text, ofstream outfile) {
     struct Node *left, *right, *top;
 
     priority_queue<Node*, vector<Node*>, compare> minHeap;
@@ -94,12 +94,15 @@ void encode(multimap<int, char> freqchart, string text) {
     table codes;
     buildCodes(minHeap.top(), "", &codes);
 
-    text_to_code(text, codes);
+    code_vector bool_text = text_to_code(text, codes);
+    copy(bool_text.begin(), bool_text.end(), ostreambuf_iterator<char>(outfile));
 }
 
 int main()
 {
     ifstream input("lorem.txt");
+    ofstream outfile("compressed.data");
+
     map<char, int> freq;
     string text;
 
@@ -127,7 +130,7 @@ int main()
             sorted.insert(make_pair(it->second, it->first));
         }
 
-        encode(sorted, text);
+        encode(sorted, text, outfile);
     }
     else
     {
