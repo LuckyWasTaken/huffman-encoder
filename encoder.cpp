@@ -4,7 +4,11 @@
 #include <map>
 #include <queue>
 
+
 using namespace std;
+
+typedef vector<bool>            code_vector;
+typedef map<char, code_vector>  table;
 
 struct Node {
 
@@ -25,16 +29,36 @@ struct compare {
     }
 };
 
+code_vector string_to_bitvec(string packed) {
+    code_vector result;
 
+    if (packed.size() == 1) {
+        return result;
+    }
+    unsigned nbits = packed[0];
+    for (string::iterator it = packed.begin() + 1; it != packed.end(); ++it) {
+        for (unsigned i = 0; i < 8; i++) {
+            result.push_back((*it >> i) & 1);
+        }
+    }
 
-void buildCodes(struct Node* root, string str, map<char, string>* codes)
+    if (nbits) {
+        for (unsigned i = 0; i < (8 - nbits); i++) {
+            result.pop_back();
+        }
+    }
+
+    return result;
+}
+
+void buildCodes(struct Node* root, string str, table* codes)
 {
 
     if (!root)
         return;
 
     if (root->data != '$') {
-        (*codes).insert( pair<char, string>(root->data, str));
+        (*codes).insert( pair<char, code_vector>(root->data, string_to_bitvec(str)));
     }
 
     buildCodes(root->left, str + "0", codes);
@@ -67,7 +91,7 @@ void encode(multimap<int, char> freqchart) {
         minHeap.push(top);
     }
 
-    map<char, string> codes;
+    table codes;
     buildCodes(minHeap.top(), "", &codes);
 }
 
