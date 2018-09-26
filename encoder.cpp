@@ -6,6 +6,25 @@
 
 using namespace std;
 
+typedef vector<bool>            code_vector;
+typedef map<char, code_vector>  table;
+
+struct BYTE {
+    unsigned b1: 1;
+    unsigned b2: 1;
+    unsigned b3: 1;
+    unsigned b4: 1;
+    unsigned b5: 1;
+    unsigned b6: 1;
+    unsigned b7: 1;
+    unsigned b8: 1;
+};
+
+union bit_pack {
+    char ch;
+    BYTE bits;
+};
+
 struct Node {
 
     char            data;
@@ -25,23 +44,43 @@ struct compare {
     }
 };
 
+code_vector string_to_bitvec(string packed) {
+    code_vector result;
 
+    for (string::iterator it = packed.begin(); it != packed.end(); ++it) {
+        if(*it == 48) result.push_back(0);
+        else result.push_back(1);
+    }
 
-void buildCodes(struct Node* root, string str, map<char, string>* codes)
+    return result;
+}
+
+code_vector text_to_code(string text, table & codes) {
+    code_vector result;
+
+    for (string::iterator it = text.begin(); it != text.end(); ++it) {
+        code_vector b = codes[*it];
+        result.insert(result.end(), b.begin(), b.end());
+    }
+
+    return result;
+}
+
+void buildCodes(struct Node* root, string str, table* codes)
 {
 
     if (!root)
         return;
 
     if (root->data != '$') {
-        (*codes).insert( pair<char, string>(root->data, str));
+        (*codes).insert( pair<char, code_vector>(root->data, string_to_bitvec(str)));
     }
 
     buildCodes(root->left, str + "0", codes);
     buildCodes(root->right, str + "1", codes);
 }
 
-void encode(multimap<int, char> freqchart) {
+code_vector encode(multimap<int, char> freqchart, string text) {
     struct Node *left, *right, *top;
 
     priority_queue<Node*, vector<Node*>, compare> minHeap;
@@ -67,14 +106,19 @@ void encode(multimap<int, char> freqchart) {
         minHeap.push(top);
     }
 
-    map<char, string> codes;
+    table codes;
     buildCodes(minHeap.top(), "", &codes);
+
+    return text_to_code(text, codes);
 }
 
 int main()
 {
     ifstream input("lorem.txt");
+    ofstream outfile("compressed.data");
+
     map<char, int> freq;
+    string text;
 
     if (input.is_open())
     {
@@ -90,6 +134,7 @@ int main()
             {
                 freq[c] = 1;
             }
+            text += c;
         };
         input.close();
 
@@ -99,7 +144,25 @@ int main()
             sorted.insert(make_pair(it->second, it->first));
         }
 
-        encode(sorted);
+        code_vector bool_text = encode(sorted, text);
+        string compressed_text;
+
+        for (int i = 0; i < bool_text.size(); i = i + 8) {
+            bit_pack pack = bit_pack();
+            
+            pack.bits.b1 = bool_text[i];
+            pack.bits.b2 = bool_text[i + 1];
+            pack.bits.b3 = bool_text[i + 2];
+            pack.bits.b4 = bool_text[i + 3];
+            pack.bits.b5 = bool_text[i + 4];
+            pack.bits.b6 = bool_text[i + 5];
+            pack.bits.b7 = bool_text[i + 6];
+            pack.bits.b8 = bool_text[i + 7];
+            
+            compressed_text += pack.ch;
+        }
+        
+        copy(compressed_text.begin(), compressed_text.end(), ostreambuf_iterator<char>(outfile));
     }
     else
     {
@@ -108,4 +171,5 @@ int main()
     }
 
     return 0;
+
 }
