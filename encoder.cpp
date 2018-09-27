@@ -112,6 +112,57 @@ code_vector encode(multimap<int, char> freqchart, string text) {
     return text_to_code(text, codes);
 }
 
+string code_vector_to_str(code_vector bool_text) {
+    string compressed_text;
+
+    int i;
+    for (i = 0; i < bool_text.size(); i = i + 8) {
+        char pack = 0;
+        
+        pack += bool_text[i];
+        pack <<= 1;
+        pack += bool_text[i + 1];
+        pack <<= 1;
+        
+        pack += bool_text[i + 2];
+        pack <<= 1;
+        pack += bool_text[i + 3];
+        pack <<= 1;
+
+        pack += bool_text[i + 4];
+        pack <<= 1;
+        pack += bool_text[i + 5];
+        pack <<= 1;
+
+        pack += bool_text[i + 6];
+        pack <<= 1;
+        pack += bool_text[i + 7];
+        pack <<= 1;
+        
+        bit_pack test = bit_pack();
+        test.ch = pack;
+
+        cout << test.bits.b1;
+        cout << test.bits.b2;
+        cout << test.bits.b3;
+        cout << test.bits.b4;
+        cout << test.bits.b5;
+        cout << test.bits.b6;
+        cout << test.bits.b7;
+        cout << test.bits.b8;
+        cout << endl;
+        
+        
+        compressed_text += pack;
+    }
+
+    // тут последний символ при i < size()
+
+    return compressed_text;
+}
+
+
+
 int main()
 {
     ifstream input("lorem.txt");
@@ -145,22 +196,7 @@ int main()
         }
 
         code_vector bool_text = encode(sorted, text);
-        string compressed_text;
-
-        for (int i = 0; i < bool_text.size(); i = i + 8) {
-            bit_pack pack = bit_pack();
-            
-            pack.bits.b1 = bool_text[i];
-            pack.bits.b2 = bool_text[i + 1];
-            pack.bits.b3 = bool_text[i + 2];
-            pack.bits.b4 = bool_text[i + 3];
-            pack.bits.b5 = bool_text[i + 4];
-            pack.bits.b6 = bool_text[i + 5];
-            pack.bits.b7 = bool_text[i + 6];
-            pack.bits.b8 = bool_text[i + 7];
-            
-            compressed_text += pack.ch;
-        }
+        string compressed_text = code_vector_to_str(bool_text);
         
         copy(compressed_text.begin(), compressed_text.end(), ostreambuf_iterator<char>(outfile));
     }
@@ -171,5 +207,4 @@ int main()
     }
 
     return 0;
-
 }
