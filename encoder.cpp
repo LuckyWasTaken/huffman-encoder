@@ -9,22 +9,6 @@ using namespace std;
 typedef vector<bool>            code_vector;
 typedef map<char, code_vector>  table;
 
-struct BYTE {
-    unsigned b1: 1;
-    unsigned b2: 1;
-    unsigned b3: 1;
-    unsigned b4: 1;
-    unsigned b5: 1;
-    unsigned b6: 1;
-    unsigned b7: 1;
-    unsigned b8: 1;
-};
-
-union bit_pack {
-    char ch;
-    BYTE bits;
-};
-
 struct Node {
 
     char            data;
