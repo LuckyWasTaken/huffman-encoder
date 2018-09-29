@@ -9,22 +9,6 @@ using namespace std;
 typedef vector<bool>            code_vector;
 typedef map<char, code_vector>  table;
 
-struct BYTE {
-    unsigned b1: 1;
-    unsigned b2: 1;
-    unsigned b3: 1;
-    unsigned b4: 1;
-    unsigned b5: 1;
-    unsigned b6: 1;
-    unsigned b7: 1;
-    unsigned b8: 1;
-};
-
-union bit_pack {
-    char ch;
-    BYTE bits;
-};
-
 struct Node {
 
     char            data;
@@ -112,6 +96,27 @@ code_vector encode(multimap<int, char> freqchart, string text) {
     return text_to_code(text, codes);
 }
 
+string code_vector_to_str(code_vector bool_text) {
+    string compressed_text;
+
+    int i;
+    for (i = 0; i < bool_text.size() + 7; i = i + 8) {
+        char pack = bool_text[i];
+
+        for (int j = i + 1; j < i + 8; j++) {
+            pack <<= 1;
+
+            pack += bool_text[j];
+        }
+
+        compressed_text += pack;
+    }
+
+    return compressed_text;
+}
+
+
+
 int main()
 {
     ifstream input("lorem.txt");
@@ -145,23 +150,8 @@ int main()
         }
 
         code_vector bool_text = encode(sorted, text);
-        string compressed_text;
+        string compressed_text = code_vector_to_str(bool_text);
 
-        for (int i = 0; i < bool_text.size(); i = i + 8) {
-            bit_pack pack = bit_pack();
-            
-            pack.bits.b1 = bool_text[i];
-            pack.bits.b2 = bool_text[i + 1];
-            pack.bits.b3 = bool_text[i + 2];
-            pack.bits.b4 = bool_text[i + 3];
-            pack.bits.b5 = bool_text[i + 4];
-            pack.bits.b6 = bool_text[i + 5];
-            pack.bits.b7 = bool_text[i + 6];
-            pack.bits.b8 = bool_text[i + 7];
-            
-            compressed_text += pack.ch;
-        }
-        
         copy(compressed_text.begin(), compressed_text.end(), ostreambuf_iterator<char>(outfile));
     }
     else
@@ -171,5 +161,4 @@ int main()
     }
 
     return 0;
-
 }
