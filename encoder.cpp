@@ -116,47 +116,17 @@ string code_vector_to_str(code_vector bool_text) {
     string compressed_text;
 
     int i;
-    for (i = 0; i < bool_text.size(); i = i + 8) {
-        char pack = 0;
-        
-        pack += bool_text[i];
-        pack <<= 1;
-        pack += bool_text[i + 1];
-        pack <<= 1;
-        
-        pack += bool_text[i + 2];
-        pack <<= 1;
-        pack += bool_text[i + 3];
-        pack <<= 1;
+    for (i = 0; i < bool_text.size() + 7; i = i + 8) {
+        char pack = bool_text[i];
 
-        pack += bool_text[i + 4];
-        pack <<= 1;
-        pack += bool_text[i + 5];
-        pack <<= 1;
+        for (int j = i + 1; j < i + 8; j++) {
+            pack <<= 1;
 
-        pack += bool_text[i + 6];
-        pack <<= 1;
-        pack += bool_text[i + 7];
-        pack <<= 1;
-        
-        bit_pack test = bit_pack();
-        test.ch = pack;
+            pack += bool_text[j];
+        }
 
-        cout << test.bits.b1;
-        cout << test.bits.b2;
-        cout << test.bits.b3;
-        cout << test.bits.b4;
-        cout << test.bits.b5;
-        cout << test.bits.b6;
-        cout << test.bits.b7;
-        cout << test.bits.b8;
-        cout << endl;
-        
-        
         compressed_text += pack;
     }
-
-    // тут последний символ при i < size()
 
     return compressed_text;
 }
@@ -197,7 +167,7 @@ int main()
 
         code_vector bool_text = encode(sorted, text);
         string compressed_text = code_vector_to_str(bool_text);
-        
+
         copy(compressed_text.begin(), compressed_text.end(), ostreambuf_iterator<char>(outfile));
     }
     else
